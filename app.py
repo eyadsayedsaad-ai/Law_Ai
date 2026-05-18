@@ -31,7 +31,7 @@ ALLOWED_VIP_CODES = [
 ]
 
 # 3. تعديل رسالة رقم التحويل (لا يوجد رقم الآن):
-CASH_MESSAGE = "ستكون هذه الخدمه متوفره قرييبا"
+CASH_MESSAGE = "❌ عذراً، رقم التحويل غير متاح حالياً. يرجى التواصل مع المستشار أنس مباشرة لتفعيل حسابك وتلقي كود الدخول."
 # =================================================================
 
 if "logged_in" not in st.session_state:
@@ -41,7 +41,7 @@ if "chat_history" not in st.session_state:
 
 # --- [الشاشة الأولى: تسجيل الدخول] ---
 if not st.session_state.logged_in:
-    # تم تصليح unsafe_allow_html هنا بالأسفل بنجاح لقراءة الـ HTML صح
+    # هنا تم تعديل الخاصية لـ unsafe_allow_html=True بنجاح عشان الشاشة الحمراء تروح
     st.markdown("<h1 style='text-align: center; color: #1E3A8A;'>⚖️ LAW AI</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align: center;'>مرحباً بك في منصة المستشار القانوني الذكي</h3>", unsafe_allow_html=True)
     st.write("")
@@ -98,7 +98,7 @@ else:
         is_premium = True
         current_role = "free"
 
-    # --- [قسم الشات الحمي والذكي] ---
+    # --- [قسم الشات المحمي والذكي] ---
     if is_premium:
         st.write("---")
         st.markdown("### 🤖 مستشارك القانوني جاهز للرد:")
