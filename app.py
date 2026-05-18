@@ -3,21 +3,19 @@ import requests
 import json
 
 # =================================================================
-# ⚙️ إعدادات الذكاء الاصطناعي (النظام الدفاعي الذكي لتجنب الـ 404)
+# ⚙️ إعدادات الذكاء الاصطناعي (الربط المباشر القياسي المستقر والمضمون)
 # =================================================================
 GENAI_API_KEY = "AIzaSyA2GFoA14J8GSPN5qoHqRL8tFOsn445FXw" 
 
 def ask_gemini_direct(prompt):
-    # قائمة بالموديلات مرتبة حسب الأفضلية والأحدث
-    models_to_try = [
-        {"url": f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={GENAI_API_KEY}"},
-        {"url": f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GENAI_API_KEY}"},
-        {"url": f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GENAI_API_KEY}"}
-    ]
-    
+    # استخدام الموديل المستقر والأكثر توافقاً مع طلبات الـ HTTP المباشرة
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GENAI_API_KEY}"
     headers = {'Content-Type': 'application/json'}
+    
     payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
+        "contents": [{
+            "parts": [{"text": prompt}]
+        }],
         "safetySettings": [
             {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
             {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
@@ -26,26 +24,32 @@ def ask_gemini_direct(prompt):
         ]
     }
     
-    last_error = ""
-    
-    # المحاولة بالتناوب بين الموديلات لضمان التشغيل قسرياً
-    for model_info in models_to_try:
-        try:
-            response = requests.post(model_info["url"], headers=headers, json=payload)
-            if response.status_code == 200:
-                result = response.json()
-                if "candidates" in result and len(result["candidates"]) > 0:
-                    return result["candidates"][0]["content"]["parts"][0]["text"]
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if "candidates" in result and len(result["candidates"]) > 0:
+                # التأكد من استخراج النص بشكل صحيح ومباشر
+                return result["candidates"][0]["content"]["parts"][0]["text"]
             else:
-                last_error = response.json().get('error', {}).get('message', response.text)
-        except Exception as e:
-            last_error = str(e)
+                return "⚠️ تم الاتصال بنجاح ولكن السيرفر لم يرجع نصاً للإجابة."
+        else:
+            # في حالة استمرار التعنت، سنحاول فوراً بالموديل البديل الآخر في نفس اللحظة
+            alternative_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key={GENAI_API_KEY}"
+            alt_response = requests.post(alternative_url, headers=headers, json=payload)
+            if alt_response.status_code == 200:
+                alt_result = alt_response.json()
+                return alt_result["candidates"][0]["content"]["parts"][0]["text"]
+                
+            error_details = response.json().get('error', {}).get('message', response.text)
+            return f"❌ خطأ في الاستجابة: {error_details}"
             
-    # لو كل المحاولات فشلت (وهذا شبه مستحيل مع الـ Fallback)
-    return f"⚠️ عذراً مستشار أنس، السيرفر يرفض الربط حالياً. تفاصيل الاستجابة الأخيرة: {last_error}"
+    except Exception as e:
+        return f"❌ خطأ في الشبكة الداخلية: {str(e)}"
 
 # =================================================================
-# 🎨 إعدادات واجهة المنصة
+# 🎨 إعدادات واجهة المنصة والتصميم القانوني الشيك
 # =================================================================
 st.set_page_config(page_title="LAW AI - منصة المستشار الرقمية", page_icon="⚖️", layout="centered")
 
