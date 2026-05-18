@@ -3,16 +3,15 @@ import requests
 import json
 
 # =================================================================
-# ⚙️ إعدادات الذكاء الاصطناعي (الطريقة المباشرة الاحترافية - Bypass SDK)
+# ⚙️ إعدادات الذكاء الاصطناعي (تم التحديث للإصدار الرسمي المستقر v1)
 # =================================================================
 GENAI_API_KEY = "AIzaSyA2GFoA14J8GSPN5qoHqRL8tFOsn445FXw" 
 
-# دالة مخصصة للاتصال المباشر بجوجل بدون استخدام المكتبة المضروبة
 def ask_gemini_direct(prompt):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GENAI_API_KEY}"
+    # تم التعديل هنا لـ v1 لتجنب خطأ الـ 404 نهائياً
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GENAI_API_KEY}"
     headers = {'Content-Type': 'application/json'}
     
-    # إعداد الطلب وإلغاء فلاتر الأمان عشان يجاوب على القضايا الجنائية براحته
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "safetySettings": [
@@ -26,15 +25,13 @@ def ask_gemini_direct(prompt):
     try:
         response = requests.post(url, headers=headers, json=payload)
         
-        # لو جوجل ردت بنجاح (كود 200)
         if response.status_code == 200:
             result = response.json()
             if "candidates" in result and len(result["candidates"]) > 0:
                 return result["candidates"][0]["content"]["parts"][0]["text"]
             else:
-                return "⚠️ جوجل استلمت الطلب ولكن لم ترجع نصاً (قد يكون الرد فارغاً)."
+                return "⚠️ جوجل استلمت الطلب ولكن لم ترجع نصاً."
         else:
-            # لو حصل خطأ من جوجل، هيطبع لك تفاصيل الخطأ المباشر
             error_details = response.json().get('error', {}).get('message', response.text)
             return f"❌ خطأ من سيرفر جوجل مباشرة: {error_details}"
             
@@ -46,12 +43,10 @@ def ask_gemini_direct(prompt):
 # =================================================================
 st.set_page_config(page_title="LAW AI - منصة المستشار الرقمية", page_icon="⚖️", layout="centered")
 
-# 🔑 الباسوردات ورسائل التحكم
 ALLOWED_PRO_CODES = ["ANAS11", "PRO99", "LAW77", "PASS44", "VIP33"]
 ALLOWED_VIP_CODES = ["KING10", "BOSS20", "VIP👑99", "LAWVIP", "ANASVIP"]
 CASH_MESSAGE = "❌ عذراً، رقم التحويل غير متاح حالياً. يرجى التواصل مع المستشار أنس مباشرة لتفعيل حسابك وتلقي كود الدخول."
 
-# تهيئة الذاكرة
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "chat_history" not in st.session_state:
@@ -81,19 +76,16 @@ else:
             st.session_state.chat_history = []
             st.rerun()
 
-    # قسم الباقات 
     st.markdown("### 👑 اختر باقة الاشتراك الخاصة بك:")
     chosen_package = st.radio(
         "الباقات المتاحة:", 
         ["الخط السريع (المجاني) 🟢", "المفكر (Pro) - 100 جنيهاً شهرياً 🔵", "المستشار الملكي (VIP) - 200 جنيهاً شهرياً 👑"],
-        index=0,
-        horizontal=False
+        index=0
     )
 
     is_premium = False
     current_role = "free"
 
-    # التحقق من الأكواد
     if "Pro" in chosen_package:
         auth_code = st.text_input("🔑 باقة Pro مقفولة. أدخل كود التفعيل الخاص بك:", type="password")
         if auth_code in ALLOWED_PRO_CODES:
@@ -120,7 +112,6 @@ else:
     if is_premium:
         st.write("---")
         
-        # رسائل ترحيبية حسب الباقة
         if current_role == "free":
             st.info("💡 **النسخة المجانية:** (إجابات مختصرة وسريعة للمعلومات العامة).")
         elif current_role == "pro":
@@ -128,12 +119,10 @@ else:
         elif current_role == "vip":
             st.warning("👑 **باقة VIP الملكية:** (تحليل قضايا كاملة، استراتيجيات، وتوقع قرارات القاضي).")
 
-        # عرض الرسائل السابقة
         for message in st.session_state.chat_history:
             with st.chat_message(message["role"]):
                 st.write(message["content"])
 
-        # مربع الإدخال
         user_input = st.chat_input("اكتب سؤالك أو تفاصيل قضيتك هنا...")
 
         if user_input:
@@ -144,7 +133,6 @@ else:
             with st.chat_message("assistant"):
                 with st.spinner("⚖️ جاري صياغة الرد القانوني..."):
                     
-                    # تخصيص شخصية الـ AI حسب الباقة
                     prompt_modifier = ""
                     if current_role == "free":
                         prompt_modifier = "أنت مساعد قانوني مصري. أجب باختصار شديد وبشكل مباشر على هذا السؤال: "
@@ -153,7 +141,6 @@ else:
                     elif current_role == "vip":
                         prompt_modifier = "أنت قاضي مصري ومستشار قانوني من الطراز الرفيع. قم بتحليل هذه القضية أو السؤال من جميع الجوانب، قدم الحلول الممكنة، الثغرات القانونية، والتكييف القانوني الدقيق: "
 
-                    # الاتصال المباشر بجوجل (Bypass Method)
                     final_prompt = prompt_modifier + "\nالسؤال/القضية: " + user_input
                     ai_response = ask_gemini_direct(final_prompt)
                     
