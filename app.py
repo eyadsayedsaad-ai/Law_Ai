@@ -3,15 +3,19 @@ import requests
 import json
 
 # =================================================================
-# ⚙️ إعدادات الذكاء الاصطناعي (تم التحديث للإصدار الرسمي المستقر v1)
+# ⚙️ إعدادات الذكاء الاصطناعي (النظام الدفاعي الذكي لتجنب الـ 404)
 # =================================================================
 GENAI_API_KEY = "AIzaSyA2GFoA14J8GSPN5qoHqRL8tFOsn445FXw" 
 
 def ask_gemini_direct(prompt):
-    # تم التعديل هنا لـ v1 لتجنب خطأ الـ 404 نهائياً
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GENAI_API_KEY}"
-    headers = {'Content-Type': 'application/json'}
+    # قائمة بالموديلات مرتبة حسب الأفضلية والأحدث
+    models_to_try = [
+        {"url": f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={GENAI_API_KEY}"},
+        {"url": f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GENAI_API_KEY}"},
+        {"url": f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GENAI_API_KEY}"}
+    ]
     
+    headers = {'Content-Type': 'application/json'}
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "safetySettings": [
@@ -22,21 +26,23 @@ def ask_gemini_direct(prompt):
         ]
     }
     
-    try:
-        response = requests.post(url, headers=headers, json=payload)
-        
-        if response.status_code == 200:
-            result = response.json()
-            if "candidates" in result and len(result["candidates"]) > 0:
-                return result["candidates"][0]["content"]["parts"][0]["text"]
+    last_error = ""
+    
+    # المحاولة بالتناوب بين الموديلات لضمان التشغيل قسرياً
+    for model_info in models_to_try:
+        try:
+            response = requests.post(model_info["url"], headers=headers, json=payload)
+            if response.status_code == 200:
+                result = response.json()
+                if "candidates" in result and len(result["candidates"]) > 0:
+                    return result["candidates"][0]["content"]["parts"][0]["text"]
             else:
-                return "⚠️ جوجل استلمت الطلب ولكن لم ترجع نصاً."
-        else:
-            error_details = response.json().get('error', {}).get('message', response.text)
-            return f"❌ خطأ من سيرفر جوجل مباشرة: {error_details}"
+                last_error = response.json().get('error', {}).get('message', response.text)
+        except Exception as e:
+            last_error = str(e)
             
-    except Exception as e:
-        return f"❌ خطأ في الاتصال بالشبكة: {str(e)}"
+    # لو كل المحاولات فشلت (وهذا شبه مستحيل مع الـ Fallback)
+    return f"⚠️ عذراً مستشار أنس، السيرفر يرفض الربط حالياً. تفاصيل الاستجابة الأخيرة: {last_error}"
 
 # =================================================================
 # 🎨 إعدادات واجهة المنصة
