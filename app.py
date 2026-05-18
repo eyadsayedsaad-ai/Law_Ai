@@ -2,9 +2,9 @@ import streamlit as st
 import google.generativeai as genai
 
 # =================================================================
-# ⚙️ إعدادات الذكاء الاصطناعي (Gemini API)
+# ⚙️ إعدادات الذكاء الاصطناعي الجديدة والمستقرة 100%
 # =================================================================
-# تم وضع مفتاحك الجديد النظيف والشغال 100% هنا
+# تم وضع مفتاحك الجديد النظيف هنا وتحديث طريقة الاستدعاء لـ Streamlit
 GENAI_API_KEY = "AIzaSyA2GFoA14J8GSPN5qoHqRL8tFOsn445FXw" 
 genai.configure(api_key=GENAI_API_KEY)
 
@@ -97,7 +97,7 @@ else:
         is_premium = True
         current_role = "free"
 
-    # --- [قسم الشات المحمي والذكي] ---
+    # --- [قسم الشات المحمي والحديث] ---
     if is_premium:
         st.write("---")
         st.markdown("### 🤖 مستشارك القانوني جاهز للرد:")
@@ -131,11 +131,14 @@ else:
                         elif current_role == "vip":
                             prompt_modifier = "أنت قاضي ومستشار قانوني مصري، حلل القضية بدقة شديدة وقدم الحلول والثغرات القانونية: "
 
-                        # تم التحديث لأحدث موديل مستقر للفلاش
-                        model = genai.GenerativeModel("gemini-1.5-flash")
-                        response = model.generate_content(prompt_modifier + user_input)
+                        # استخدام الطريقة الرسمية والحديثة لاستدعاء الموديل المستقر
+                        model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+                        response = model.generate_content(contents=prompt_modifier + user_input)
                         
-                        st.write(response.text)
-                        st.session_state.chat_history.append({"role": "assistant", "content": response.text})
+                        if response.text:
+                            st.write(response.text)
+                            st.session_state.chat_history.append({"role": "assistant", "content": response.text})
+                        else:
+                            st.error("جوجل استلمت الطلب ولم ترجع نصاً، جرب سؤالاً آخر.")
                     except Exception as e:
-                        st.error("حدث خطأ في الاتصال بالخادم، تأكد من الـ API Key.")
+                        st.error("حدث خطأ في الاتصال بالخادم، تأكد من الـ API Key في الإعدادات.")
