@@ -10,22 +10,22 @@ genai.configure(api_key=GENAI_API_KEY)
 st.set_page_config(page_title="LAW AI - منصة المستشار الرقمية", page_icon="⚖️", layout="centered")
 
 # =================================================================
-# 🔑 مكان تغيير الباسوردات بإيدك (التحكم اليدوي الكامل)
+# 🔑 مكان تغيير الباسوردات ورسالة الكاش (التحكم اليدوي الكامل)
 # =================================================================
-# 1. اكتب الـ 5 باسات بتوع باقة الـ Pro هنا بإيدك (ينفع حروف أو أرقام زي ما تحب):
+# 1. اكتب الـ 5 باسات بتوع باقة الـ Pro هنا بإيدك:
 ALLOWED_PRO_CODES = [
-    "123e4",
-    "12r45",
-    "1v345",
-    "m2345",
-    "1234l"
+    "ANAS11",
+    "PRO99",
+    "LAW77",
+    "PASS44",
+    "VIP33"
 ]
 
-# 2. اكتب الـ 5 باسات بتوع باقة الـ VIP هنا بإيدك (ينفع حروف أو أرقام زي ما تحب):
+# 2. اكتب الـ 5 باسات بتوع باقة الـ VIP هنا بإيدك:
 ALLOWED_VIP_CODES = [
     "KING10",
     "BOSS20",
-    "VIP99",
+    "VIP👑99",
     "LAWVIP",
     "ANASVIP"
 ]
@@ -41,8 +41,9 @@ if "chat_history" not in st.session_state:
 
 # --- [الشاشة الأولى: تسجيل الدخول] ---
 if not st.session_state.logged_in:
-    st.markdown("<h1 style='text-align: center; color: #1E3A8A;'>⚖️ LAW AI</h1>", unsafe_index=True)
-    st.markdown("<h3 style='text-align: center;'>مرحباً بك في منصة المستشار القانوني الذكي</h3>", unsafe_index=True)
+    # تم تصليح unsafe_allow_html هنا بالأسفل بنجاح لقراءة الـ HTML صح
+    st.markdown("<h1 style='text-align: center; color: #1E3A8A;'>⚖️ LAW AI</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center;'>مرحباً بك في منصة المستشار القانوني الذكي</h3>", unsafe_allow_html=True)
     st.write("")
     
     google_btn = st.button("🌐 تسجيل الدخول بواسطة حساب Google", use_container_width=True)
@@ -69,11 +70,11 @@ else:
         index=0
     )
 
-    # تجهيز متغيرات الأمان
+    # تجهيز متغيرات الأمان لقفل الشات
     is_premium = False
     current_role = "free"
 
-    # الفحص ومطابقة الكود المكتوب مع لستة الباسوردات بتاعتك
+    # الفحص ومطابقة الكود المكتوب مع لستة الباسوردات الثابتة
     if chosen_package == "المفكر (Pro) - 100 جنيهاً شهرياً":
         auth_code = st.text_input("🔑 باقة Pro مقفولة. أدخل كود التفعيل الخاص بك:", type="password")
         if auth_code in ALLOWED_PRO_CODES:
@@ -93,11 +94,11 @@ else:
             st.error(f"🔒 الشات مقفول! {CASH_MESSAGE}")
     
     else:
-        # الباقة المجانية
+        # الباقة المجانية تفتح تلقائياً
         is_premium = True
         current_role = "free"
 
-    # --- [قسم الشات] ---
+    # --- [قسم الشات الحمي والذكي] ---
     if is_premium:
         st.write("---")
         st.markdown("### 🤖 مستشارك القانوني جاهز للرد:")
