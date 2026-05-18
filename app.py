@@ -4,7 +4,7 @@ import google.generativeai as genai
 # =================================================================
 # ⚙️ إعدادات الذكاء الاصطناعي (Gemini API)
 # =================================================================
-GENAI_API_KEY = "ضع_مفتاح_جوجل_gemini_هنا" 
+GENAI_API_KEY = "AIzaSyBC8XEVh5MvuswuTiVYYaqpQbflkzjnHWg" 
 genai.configure(api_key=GENAI_API_KEY)
 
 st.set_page_config(page_title="LAW AI - منصة المستشار الرقمية", page_icon="⚖️", layout="centered")
