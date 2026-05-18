@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # =================================================================
-# ⚙️ إعدادات الذكاء الاصطناعي الجديدة والمستقرة 100%
+# ⚙️ إعدادات الذكاء الاصطناعي المستقرة والمتوافقة
 # =================================================================
 GENAI_API_KEY = "AIzaSyA2GFoA14J8GSPN5qoHqRL8tFOsn445FXw" 
 genai.configure(api_key=GENAI_API_KEY)
@@ -66,7 +66,6 @@ else:
         index=0
     )
 
-    # تجهيز متغيرات الأمان لقفل الشات
     is_premium = False
     current_role = "free"
 
@@ -126,8 +125,8 @@ else:
                         elif current_role == "vip":
                             prompt_modifier = "أنت قاضي ومستشار قانوني مصري، حلل القضية بدقة شديدة وقدم الحلول والثغرات القانونية: "
 
-                        # الاستدعاء الرسمي الحديث
-                        model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+                        # تم التغيير لـ gemini-pro المتوافق تماماً مع إعدادات السيرفر الحالي
+                        model = genai.GenerativeModel(model_name="gemini-pro")
                         response = model.generate_content(contents=prompt_modifier + user_input)
                         
                         if response.text:
@@ -136,5 +135,4 @@ else:
                         else:
                             st.error("جوجل استلمت الطلب ولم ترجع نصاً، جرب سؤالاً آخر.")
                     except Exception as e:
-                        # كاشف الأخطاء الحقيقي السحري
                         st.error(f"❌ الخطأ الحقيقي من السيرفر هو: {str(e)}")
