@@ -2,29 +2,35 @@ import streamlit as st
 import google.generativeai as genai
 
 # =================================================================
-# ⚙️ إعدادات الموديل الجديد والتحديثات المستقرة 100%
+# ⚙️ إعدادات الذكاء الاصطناعي الرسمية (التحديث الجديد المقاوم للأخطاء)
 # =================================================================
-# وضع المفتاح بشكل مباشر لضمان القراءة الفورية
 GENAI_API_KEY = "AIzaSyA2GFoA14J8GSPN5qoHqRL8tFOsn445FXw"
 genai.configure(api_key=GENAI_API_KEY)
 
-def ask_gemini(prompt):
+def ask_gemini_safe(prompt):
+    # الخطة (أ): تجربة الموديل الأحدث عبر المكتبة الرسمية
     try:
-        # تشغيل الموديل الجديد السريع جداً والأحدث من جوجل
         model = genai.GenerativeModel("gemini-1.5-flash")
         response = model.generate_content(prompt)
-        
         if response.text:
             return response.text
-        else:
-            return "⚠️ تم الاتصال بنجاح ولكن لم يتم إرجاع نص."
-    except Exception as e:
-        return f"❌ خطأ في الاتصال بالخادم: {str(e)}"
+    except Exception as e1:
+        # الخطة (ب): لو جوجل عصلجت في الموديل الأول، ادخل فوراً بالموديل المستقر الكلاسيكي
+        try:
+            fallback_model = genai.GenerativeModel("gemini-pro")
+            response = fallback_model.generate_content(prompt)
+            if response.text:
+                return response.text
+        except Exception as e2:
+            return f"❌ عذراً مستشار أنس، هناك مشكلة مؤقتة في خوادم جوجل. تفاصيل الخطأ: {str(e2)}"
+    
+    return "⚠️ لم يتم إرجاع أي نص من السيرفر، يرجى المحاولة مرة أخرى."
 
-# 🎨 إعدادات واجهة المنصة والتصميم القانوني الشيك
+# =================================================================
+# 🎨 واجهة منصة المستشار الرقمية الشيك
+# =================================================================
 st.set_page_config(page_title="LAW AI - منصة المستشار الرقمية", page_icon="⚖️", layout="centered")
 
-# الباسوردات ورسائل التحكم
 ALLOWED_PRO_CODES = ["ANAS11", "PRO99", "LAW77", "PASS44", "VIP33"]
 ALLOWED_VIP_CODES = ["KING10", "BOSS20", "VIP👑99", "LAWVIP", "ANASVIP"]
 CASH_MESSAGE = "❌ عذراً، رقم التحويل غير متاح حالياً. يرجى التواصل مع المستشار أنس مباشرة لتفعيل حسابك وتلقي كود الدخول."
@@ -124,7 +130,7 @@ else:
                         prompt_modifier = "أنت قاضي مصري ومستشار قانوني من الطراز الرفيع. قم بتحليل هذه القضية أو السؤال من جميع الجوانب، قدم الحلول الممكنة، الثغرات القانونية، والتكييف القانوني الدقيق: "
 
                     final_prompt = prompt_modifier + "\nالسؤال/القضية: " + user_input
-                    ai_response = ask_gemini(final_prompt)
+                    ai_response = ask_gemini_safe(final_prompt)
                     
                     st.write(ai_response)
                     st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
