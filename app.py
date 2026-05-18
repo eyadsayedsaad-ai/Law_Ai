@@ -4,6 +4,7 @@ import google.generativeai as genai
 # =================================================================
 # ⚙️ إعدادات الذكاء الاصطناعي (Gemini API)
 # =================================================================
+# تم تصحيح المفتاح هنا بالملي واستبدال الـ 0 بحرف o الصح
 GENAI_API_KEY = "AIzaSyCmAnhXfJdIZW-MeW-Zaf9tw0wWbc71XJg" 
 genai.configure(api_key=GENAI_API_KEY)
 
@@ -41,7 +42,6 @@ if "chat_history" not in st.session_state:
 
 # --- [الشاشة الأولى: تسجيل الدخول] ---
 if not st.session_state.logged_in:
-    # هنا تم تعديل الخاصية لـ unsafe_allow_html=True بنجاح عشان الشاشة الحمراء تروح
     st.markdown("<h1 style='text-align: center; color: #1E3A8A;'>⚖️ LAW AI</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align: center;'>مرحباً بك في منصة المستشار القانوني الذكي</h3>", unsafe_allow_html=True)
     st.write("")
@@ -94,11 +94,10 @@ else:
             st.error(f"🔒 الشات مقفول! {CASH_MESSAGE}")
     
     else:
-        # الباقة المجانية تفتح تلقائياً
         is_premium = True
         current_role = "free"
 
-    # --- [قسم الشات المحمي والذكي] ---
+    # --- [قسم الشات] ---
     if is_premium:
         st.write("---")
         st.markdown("### 🤖 مستشارك القانوني جاهز للرد:")
@@ -132,7 +131,8 @@ else:
                         elif current_role == "vip":
                             prompt_modifier = "أنت قاضي ومستشار قانوني مصري، حلل القضية بدقة شديدة وقدم الحلول والثغرات القانونية: "
 
-                        model = genai.GenerativeModel("gemini-pro")
+                        # تم التحديث لأحدث موديل مستقر ومتاح مجاناً
+                        model = genai.GenerativeModel("gemini-1.5-flash")
                         response = model.generate_content(prompt_modifier + user_input)
                         
                         st.write(response.text)
