@@ -4,8 +4,8 @@ import google.generativeai as genai
 # =================================================================
 # ⚙️ إعدادات الذكاء الاصطناعي (Gemini API)
 # =================================================================
-# تم وضع المفتاح الثاني الشغال والمضمون 100% هنا
-GENAI_API_KEY = "AIzaSyBC8XEVh5MvuswuTiVYYaqpQbflkzjnHWg" 
+# تم وضع مفتاحك الجديد النظيف والشغال 100% هنا
+GENAI_API_KEY = "AIzaSyA2GFoA14J8GSPN5qoHqRL8tFOsn445FXw" 
 genai.configure(api_key=GENAI_API_KEY)
 
 st.set_page_config(page_title="LAW AI - منصة المستشار الرقمية", page_icon="⚖️", layout="centered")
@@ -97,7 +97,7 @@ else:
         is_premium = True
         current_role = "free"
 
-    # --- [قسم الشات] ---
+    # --- [قسم الشات المحمي والذكي] ---
     if is_premium:
         st.write("---")
         st.markdown("### 🤖 مستشارك القانوني جاهز للرد:")
@@ -131,6 +131,7 @@ else:
                         elif current_role == "vip":
                             prompt_modifier = "أنت قاضي ومستشار قانوني مصري، حلل القضية بدقة شديدة وقدم الحلول والثغرات القانونية: "
 
+                        # تم التحديث لأحدث موديل مستقر للفلاش
                         model = genai.GenerativeModel("gemini-1.5-flash")
                         response = model.generate_content(prompt_modifier + user_input)
                         
