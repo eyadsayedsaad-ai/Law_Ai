@@ -1,58 +1,30 @@
 import streamlit as st
-import requests
-import json
+import google.generativeai as genai
 
 # =================================================================
-# ⚙️ إعدادات الذكاء الاصطناعي (الربط المباشر القياسي المستقر والمضمون)
+# ⚙️ إعدادات الموديل الجديد والتحديثات المستقرة 100%
 # =================================================================
-GENAI_API_KEY = "AIzaSyA2GFoA14J8GSPN5qoHqRL8tFOsn445FXw" 
+# وضع المفتاح بشكل مباشر لضمان القراءة الفورية
+GENAI_API_KEY = "AIzaSyA2GFoA14J8GSPN5qoHqRL8tFOsn445FXw"
+genai.configure(api_key=GENAI_API_KEY)
 
-def ask_gemini_direct(prompt):
-    # استخدام الموديل المستقر والأكثر توافقاً مع طلبات الـ HTTP المباشرة
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GENAI_API_KEY}"
-    headers = {'Content-Type': 'application/json'}
-    
-    payload = {
-        "contents": [{
-            "parts": [{"text": prompt}]
-        }],
-        "safetySettings": [
-            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
-        ]
-    }
-    
+def ask_gemini(prompt):
     try:
-        response = requests.post(url, headers=headers, json=payload)
+        # تشغيل الموديل الجديد السريع جداً والأحدث من جوجل
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
         
-        if response.status_code == 200:
-            result = response.json()
-            if "candidates" in result and len(result["candidates"]) > 0:
-                # التأكد من استخراج النص بشكل صحيح ومباشر
-                return result["candidates"][0]["content"]["parts"][0]["text"]
-            else:
-                return "⚠️ تم الاتصال بنجاح ولكن السيرفر لم يرجع نصاً للإجابة."
+        if response.text:
+            return response.text
         else:
-            # في حالة استمرار التعنت، سنحاول فوراً بالموديل البديل الآخر في نفس اللحظة
-            alternative_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key={GENAI_API_KEY}"
-            alt_response = requests.post(alternative_url, headers=headers, json=payload)
-            if alt_response.status_code == 200:
-                alt_result = alt_response.json()
-                return alt_result["candidates"][0]["content"]["parts"][0]["text"]
-                
-            error_details = response.json().get('error', {}).get('message', response.text)
-            return f"❌ خطأ في الاستجابة: {error_details}"
-            
+            return "⚠️ تم الاتصال بنجاح ولكن لم يتم إرجاع نص."
     except Exception as e:
-        return f"❌ خطأ في الشبكة الداخلية: {str(e)}"
+        return f"❌ خطأ في الاتصال بالخادم: {str(e)}"
 
-# =================================================================
 # 🎨 إعدادات واجهة المنصة والتصميم القانوني الشيك
-# =================================================================
 st.set_page_config(page_title="LAW AI - منصة المستشار الرقمية", page_icon="⚖️", layout="centered")
 
+# الباسوردات ورسائل التحكم
 ALLOWED_PRO_CODES = ["ANAS11", "PRO99", "LAW77", "PASS44", "VIP33"]
 ALLOWED_VIP_CODES = ["KING10", "BOSS20", "VIP👑99", "LAWVIP", "ANASVIP"]
 CASH_MESSAGE = "❌ عذراً، رقم التحويل غير متاح حالياً. يرجى التواصل مع المستشار أنس مباشرة لتفعيل حسابك وتلقي كود الدخول."
@@ -152,7 +124,7 @@ else:
                         prompt_modifier = "أنت قاضي مصري ومستشار قانوني من الطراز الرفيع. قم بتحليل هذه القضية أو السؤال من جميع الجوانب، قدم الحلول الممكنة، الثغرات القانونية، والتكييف القانوني الدقيق: "
 
                     final_prompt = prompt_modifier + "\nالسؤال/القضية: " + user_input
-                    ai_response = ask_gemini_direct(final_prompt)
+                    ai_response = ask_gemini(final_prompt)
                     
                     st.write(ai_response)
                     st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
