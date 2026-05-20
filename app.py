@@ -1,30 +1,27 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 
 # =================================================================
-# ⚙️ إعدادات الذكاء الاصطناعي الرسمية (التحديث الجديد المقاوم للأخطاء)
+# ⚙️ إعدادات الذكاء الاصطناعي الرسمية (التحديث الأحدث لشركة جوجل)
 # =================================================================
 GENAI_API_KEY = "AIzaSyA2GFoA14J8GSPN5qoHqRL8tFOsn445FXw"
-genai.configure(api_key=GENAI_API_KEY)
 
-def ask_gemini_safe(prompt):
-    # الخطة (أ): تجربة الموديل الأحدث عبر المكتبة الرسمية
+# تشغيل الـ Client الجديد كلياً حسب التحديث الأخير لـ google-genai
+client = genai.Client(api_key=GENAI_API_KEY)
+
+def ask_gemini_latest(prompt):
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
+        # الموديل الأحدث المتوافق 100% مع المكتبة الجديدة
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
         if response.text:
             return response.text
-    except Exception as e1:
-        # الخطة (ب): لو جوجل عصلجت في الموديل الأول، ادخل فوراً بالموديل المستقر الكلاسيكي
-        try:
-            fallback_model = genai.GenerativeModel("gemini-pro")
-            response = fallback_model.generate_content(prompt)
-            if response.text:
-                return response.text
-        except Exception as e2:
-            return f"❌ عذراً مستشار أنس، هناك مشكلة مؤقتة في خوادم جوجل. تفاصيل الخطأ: {str(e2)}"
-    
-    return "⚠️ لم يتم إرجاع أي نص من السيرفر، يرجى المحاولة مرة أخرى."
+        else:
+            return "⚠️ تم الاتصال بنجاح ولكن لم يتم إرجاع نص."
+    except Exception as e:
+        return f"❌ خطأ في الاتصال بالخادم الحديث: {str(e)}"
 
 # =================================================================
 # 🎨 واجهة منصة المستشار الرقمية الشيك
@@ -130,7 +127,7 @@ else:
                         prompt_modifier = "أنت قاضي مصري ومستشار قانوني من الطراز الرفيع. قم بتحليل هذه القضية أو السؤال من جميع الجوانب، قدم الحلول الممكنة، الثغرات القانونية، والتكييف القانوني الدقيق: "
 
                     final_prompt = prompt_modifier + "\nالسؤال/القضية: " + user_input
-                    ai_response = ask_gemini_safe(final_prompt)
+                    ai_response = ask_gemini_latest(final_prompt)
                     
                     st.write(ai_response)
                     st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
