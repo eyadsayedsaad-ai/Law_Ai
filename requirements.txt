@@ -1,5 +1,3 @@
-google-genai
 streamlit
-pillow
-requests
+google-genai
 streamlit-cookies-controller
