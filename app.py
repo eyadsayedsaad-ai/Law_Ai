@@ -17,7 +17,7 @@ except Exception as e:
 
 def ask_gemini_latest(prompt):
     max_retries = 3
-    backoff_time = 2
+    backoff_time = 3  # زدنا وقت الانتظار بين المحاولات عشان يفك البلوك تلقائي
     for attempt in range(max_retries):
         try:
             response = client.models.generate_content(
@@ -29,15 +29,20 @@ def ask_gemini_latest(prompt):
             else:
                 return "⚠️ تم الاتصال بنجاح ولكن لم يتم إرجاع نص."
         except Exception as e:
-            # الحل الذكي: لو استهلكت الليميت المجاني (429)، يعطيه رسالة تنبيه هادئة بدل الإيرور
-            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                return "⚠️ السيرفر عليه ضغط حالياً بسبب حدود الاستخدام المجاني، فضلاً انتظر 30 ثانية واكتب سؤالك مجدداً تلقائياً."
+            error_str = str(e)
+            # لو الحساب مجاني وجاب ليميت، الكود هيهدي اللعب تلقائي وميطلعش شاشة الإيرور المرعبة
+            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                if attempt < max_retries - 1:
+                    time.sleep(backoff_time)
+                    backoff_time *= 2  # يضاعف وقت الانتظار عشان يدي فرصة لجوجل تفتح
+                    continue
+                return "⚠️ السيرفر المجاني مضغوط حالياً ومقفل مؤقتاً من جوجل. يرجى المحاولة مرة أخرى بعد ثوانٍ بسيطة."
             
-            if "503" in str(e) and attempt < max_retries - 1:
+            if "503" in error_str and attempt < max_retries - 1:
                 time.sleep(backoff_time)
                 backoff_time *= 1.5
                 continue
-            return f"❌ خطأ في الاتصال بالخادم: {str(e)}"
+            return f"❌ خطأ في الاتصال بالخادم: {error_str}"
 
 # =================================================================
 # 🎨 واجهة منصة LAW AI - المستشار القانوني الرقمي الشيك
@@ -46,60 +51,20 @@ st.set_page_config(page_title="LAW AI - منصة المستشار الرقمية
 
 # --- [ 🔑 قائمة أكواد باقة الـ Pro - شهر مايو ] ---
 ALLOWED_PRO_CODES = [
-    "M5_PRO_AHMED_01",
-    "M5_PRO_MOHAMED_02",
-    "M5_PRO_MAHMOUD_03",
-    "M5_PRO_MOSTAFA_04",
-    "M5_PRO_ALI_05",
-    "M5_PRO_OMAR_06",
-    "M5_PRO_AMR_07",
-    "M5_PRO_KHALED_08",
-    "M5_PRO_YOUSSEF_09",
-    "M5_PRO_TARIQ_10",
-    "M5_PRO_HASSAN_11",
-    "M5_PRO_HUSSEIN_12",
-    "M5_PRO_IBRAHIM_13",
-    "M5_PRO_SAYED_14",
-    "M5_PRO_HANY_15",
-    "M5_PRO_SHERIF_16",
-    "M5_PRO_TAHER_17",
-    "M5_PRO_KARIM_18",
-    "M5_PRO_WAEL_19",
-    "M5_PRO_MAGDY_20",
-    "M5_PRO_SAMEH_21",
-    "M5_PRO_RAMY_22",
-    "M5_PRO_HAITHAM_23",
-    "M5_PRO_EZZ_24",
-    "M5_PRO_ANWAR_25",
-    "M5_PRO_ADEL_26",
-    "M5_PRO_EMAD_27",
-    "M5_PRO_MEDHAT_28",
-    "M5_PRO_SAEED_29",
-    "M5_PRO_FAROUK_30"
+    "M5_PRO_AHMED_01", "M5_PRO_MOHAMED_02", "M5_PRO_MAHMOUD_03", "M5_PRO_MOSTAFA_04", "M5_PRO_ALI_05",
+    "M5_PRO_OMAR_06", "M5_PRO_AMR_07", "M5_PRO_KHALED_08", "M5_PRO_YOUSSEF_09", "M5_PRO_TARIQ_10",
+    "M5_PRO_HASSAN_11", "M5_PRO_HUSSEIN_12", "M5_PRO_IBRAHIM_13", "M5_PRO_SAYED_14", "M5_PRO_HANY_15",
+    "M5_PRO_SHERIF_16", "M5_PRO_TAHER_17", "M5_PRO_KARIM_18", "M5_PRO_WAEL_19", "M5_PRO_MAGDY_20",
+    "M5_PRO_SAMEH_21", "M5_PRO_RAMY_22", "M5_PRO_HAITHAM_23", "M5_PRO_EZZ_24", "M5_PRO_ANWAR_25",
+    "M5_PRO_ADEL_26", "M5_PRO_EMAD_27", "M5_PRO_MEDHAT_28", "M5_PRO_SAEED_29", "M5_PRO_FAROUK_30"
 ]
 
 # --- [ 👑 قائمة أكواد باقة الـ VIP - شهر مايو ] ---
 ALLOWED_VIP_CODES = [
-    "M5_VIP_KING_01",
-    "M5_VIP_BOSS_02",
-    "M5_VIP_ROYAL_03",
-    "M5_VIP_ELITE_04",
-    "M5_VIP_GOLD_05",
-    "M5_VIP_PRIME_06",
-    "M5_VIP_EXPERT_07",
-    "M5_VIP_CHIEF_08",
-    "M5_VIP_MASTER_09",
-    "M5_VIP_LEADER_10",
-    "M5_VIP_JUDGE_11",
-    "M5_VIP_COURT_12",
-    "M5_VIP_LAWYER_13",
-    "M5_VIP_ALPHA_14",
-    "M5_VIP_OMEGA_15",
-    "M5_VIP_SMART_16",
-    "M5_VIP_TOP_17",
-    "M5_VIP_MAX_18",
-    "M5_VIP_HERO_19",
-    "M5_VIP_SHIELD_20"
+    "M5_VIP_KING_01", "M5_VIP_BOSS_02", "M5_VIP_ROYAL_03", "M5_VIP_ELITE_04", "M5_VIP_GOLD_05",
+    "M5_VIP_PRIME_06", "M5_VIP_EXPERT_07", "M5_VIP_CHIEF_08", "M5_VIP_MASTER_09", "M5_VIP_LEADER_10",
+    "M5_VIP_JUDGE_11", "M5_VIP_COURT_12", "M5_VIP_LAWYER_13", "M5_VIP_ALPHA_14", "M5_VIP_OMEGA_15",
+    "M5_VIP_SMART_16", "M5_VIP_TOP_17", "M5_VIP_MAX_18", "M5_VIP_HERO_19", "M5_VIP_SHIELD_20"
 ]
 
 CASH_MESSAGE = "❌ عذراً، هذا الكود غير صحيح، أو تم تفعيله مسبقاً على جهاز آخر!"
@@ -142,49 +107,37 @@ else:
 
     is_premium = False
     current_role = "free"
-
-    # قراءة الكود المسجل في متصفح المستخدم حالياً
     saved_cookie_code = controller.get('user_active_code')
 
     if "Pro" in chosen_package:
         if saved_cookie_code in ALLOWED_PRO_CODES:
-            st.success("🎉 مرحباً بك مجدداً! تم التفعيل التلقائي لجهازك في باقة Pro.")
-            is_premium = True
-            current_role = "pro"
+            is_premium = True; current_role = "pro"
         else:
             auth_code = st.text_input("🔑 باقة Pro مقفولة. أدخل كود التفعيل الخاص بك:", type="password")
             if auth_code in ALLOWED_PRO_CODES:
                 controller.set('user_active_code', auth_code)
-                st.success("🎉 ممتاز! تم تفعيل الباقة وقفل الكود على جهازك الحالي بنجاح.")
-                is_premium = True
-                current_role = "pro"
+                is_premium = True; current_role = "pro"
                 st.rerun()
             elif auth_code:
                 st.error(CASH_MESSAGE)
 
     elif "VIP" in chosen_package:
         if saved_cookie_code in ALLOWED_VIP_CODES:
-            st.success("👑 مرحباً بك يا ملك! تم تفعيل باقة VIP تلقائياً على جهازك.")
-            is_premium = True
-            current_role = "vip"
+            is_premium = True; current_role = "vip"
         else:
             auth_code = st.text_input("🔑 باقة VIP مقفولة. أدخل كود التفعيل الملكي:", type="password")
             if auth_code in ALLOWED_VIP_CODES:
                 controller.set('user_active_code', auth_code)
-                st.success("👑 أهلاً بك! تم التفعيل وقفل الكود الملكي على جهازك بنجاح.")
-                is_premium = True
-                current_role = "vip"
+                is_premium = True; current_role = "vip"
                 st.rerun()
             elif auth_code:
                 st.error(CASH_MESSAGE)
     
     else:
-        is_premium = True
-        current_role = "free"
+        is_premium = True; current_role = "free"
 
     if is_premium:
         st.write("---")
-        
         if current_role == "free":
             st.info("💡 **النسخة المجانية:** (إجابات مختصرة وسريعة للمعلومات العامة).")
         elif current_role == "pro":
