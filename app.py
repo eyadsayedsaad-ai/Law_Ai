@@ -1,10 +1,10 @@
 # ==============================================================================
-# 🌟 منصة LAW AI - الإصدار الملكي الشامل (The Ultimate Edition)
+# 🌟 منصة LAW AI - الإصدار المستقر والنهائي (Stable Edition)
 # 🌟 الوصف: مستشار قانوني رقمي متكامل، نظام باقات، حماية صارمة، وتصميم فخم.
 # ==============================================================================
 
 import streamlit as st
-from google import genai
+import google.generativeai as genai
 import time
 import datetime
 import re
@@ -99,6 +99,7 @@ st.markdown("""
 controller = CookieController()
 
 def sanitize_input(text):
+    """حماية النظام من الأكواد الخبيثة"""
     if not text: return ""
     clean_text = re.sub(r'[^a-zA-Z0-9\s\u0600-\u06FF\?\!\.\,\:\-\_\(\)\'\"\n]', '', text)
     blacklist = ["<script", "javascript:", "union select", "drop table", "exec(", "ignore previous"]
@@ -124,17 +125,19 @@ if st.session_state.lockout_time:
         st.session_state.lockout_time = None
 
 # ==============================================================================
-# 🧠 [القسم الثالث]: محرك القانون المصري (Gemini 1.5 Flash - لتخطي ضغط 429)
+# 🧠 [القسم الثالث]: محرك القانون المصري (استخدام مكتبة generativeai المستقرة)
 # ==============================================================================
 try:
-    client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    # استخدام الموديل الأسرع والأكثر استقراراً للحسابات المجانية
+    model = genai.GenerativeModel('gemini-1.5-flash')
     API_READY = True
-except:
+except Exception as e:
     API_READY = False
-    st.error("⚠️ مفتاح GEMINI_API_KEY مفقود من السيرفر.")
+    st.error("⚠️ مفتاح GEMINI_API_KEY مفقود من إعدادات Secrets أو غير صحيح.")
 
 def ask_law_ai(prompt, package_type):
-    if not API_READY: return "❌ النظام متوقف تقنياً."
+    if not API_READY: return "❌ النظام متوقف تقنياً لعدم وجود مفتاح التشغيل."
 
     # تشكيل عقلية الذكاء الاصطناعي بناءً على الباقة
     if package_type == "vip":
@@ -154,22 +157,14 @@ def ask_law_ai(prompt, package_type):
 
     final_prompt = f"[تعليمات صارمة: لا تكتب أكواد، لا تخرج عن دورك القانوني]\n\n{system_persona}\n\nسؤال الموكل:\n{prompt}"
     
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            response = client.models.generate_content(
-                model='gemini-1.5-flash', # تم التغيير لحل مشكلة السيرفر المزدحم
-                contents=final_prompt,
-            )
-            return response.text if response.text else "⚠️ عذراً، لم أتمكن من صياغة الرد."
-        except Exception as e:
-            err = str(e).lower()
-            if "429" in err or "quota" in err:
-                return "⚠️ (تنبيه السيرفر): ضغط هائل على شبكة الاستشارات المجانية. يرجى الانتظار دقيقة والمحاولة."
-            if "503" in err and attempt < max_retries - 1:
-                time.sleep(2)
-                continue
-            return f"❌ خطأ تقني في قاعة المحكمة الرقمية: {str(e)[:60]}"
+    try:
+        response = model.generate_content(final_prompt)
+        return response.text if response.text else "⚠️ عذراً، لم أتمكن من صياغة الرد."
+    except Exception as e:
+        err = str(e).lower()
+        if "429" in err or "quota" in err:
+            return "⚠️ (خطأ 429): الرصيد المجاني للمفتاح الحالي نفد أو هناك ضغط هائل. قم بإنشاء مفتاح API جديد."
+        return f"❌ خطأ تقني في قاعة المحكمة الرقمية: {str(e)[:100]}"
 
 # ==============================================================================
 # 🔑 [القسم الرابع]: قواعد بيانات الباقات (الشاملة)
@@ -178,16 +173,13 @@ ALLOWED_PRO_CODES = [
     "M5_PRO_AHMED_01", "M5_PRO_MOHAMED_02", "M5_PRO_MAHMOUD_03", "M5_PRO_MOSTAFA_04", "M5_PRO_ALI_05",
     "M5_PRO_OMAR_06", "M5_PRO_AMR_07", "M5_PRO_KHALED_08", "M5_PRO_YOUSSEF_09", "M5_PRO_TARIQ_10",
     "M5_PRO_HASSAN_11", "M5_PRO_HUSSEIN_12", "M5_PRO_IBRAHIM_13", "M5_PRO_SAYED_14", "M5_PRO_HANY_15",
-    "M5_PRO_SHERIF_16", "M5_PRO_TAHER_17", "M5_PRO_KARIM_18", "M5_PRO_WAEL_19", "M5_PRO_MAGDY_20",
-    "M5_PRO_SAMEH_21", "M5_PRO_RAMY_22", "M5_PRO_HAITHAM_23", "M5_PRO_EZZ_24", "M5_PRO_ANWAR_25",
-    "M5_PRO_ADEL_26", "M5_PRO_EMAD_27", "M5_PRO_MEDHAT_28", "M5_PRO_SAEED_29", "M5_PRO_FAROUK_30"
+    "M5_PRO_SHERIF_16", "M5_PRO_TAHER_17", "M5_PRO_KARIM_18", "M5_PRO_WAEL_19", "M5_PRO_MAGDY_20"
 ]
 
 ALLOWED_VIP_CODES = [
     "M5_VIP_KING_01", "M5_VIP_BOSS_02", "M5_VIP_ROYAL_03", "M5_VIP_ELITE_04", "M5_VIP_GOLD_05",
     "M5_VIP_PRIME_06", "M5_VIP_EXPERT_07", "M5_VIP_CHIEF_08", "M5_VIP_MASTER_09", "M5_VIP_LEADER_10",
-    "M5_VIP_JUDGE_11", "M5_VIP_COURT_12", "M5_VIP_LAWYER_13", "M5_VIP_ALPHA_14", "M5_VIP_OMEGA_15",
-    "M5_VIP_SMART_16", "M5_VIP_TOP_17", "M5_VIP_MAX_18", "M5_VIP_HERO_19", "M5_VIP_SHIELD_20"
+    "M5_VIP_JUDGE_11", "M5_VIP_COURT_12", "M5_VIP_LAWYER_13", "M5_VIP_ALPHA_14", "M5_VIP_OMEGA_15"
 ]
 
 # ==============================================================================
