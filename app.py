@@ -1,43 +1,56 @@
 import streamlit as st
-import hashlib
 import re
 import secrets
 import time
+import logging
 from google import genai
 from streamlit_cookies_controller import CookieController
 
 # =================================================================
-# 🔑 قاعدة بيانات الأكواد (100 كود مدمج)
+# 1. إعداد سجل العمليات (Logging)
+# =================================================================
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# =================================================================
+# 2. قاعدة البيانات (50 كود Pro و 50 كود VIP)
 # =================================================================
 PRO_CODES = [
-    "LAW-PRO-A1", "LAW-PRO-A2", "LAW-PRO-A3", "LAW-PRO-A4", "LAW-PRO-A5", "LAW-PRO-A6", "LAW-PRO-A7", "LAW-PRO-A8", "LAW-PRO-A9", "LAW-PRO-A10",
-    "LAW-PRO-B1", "LAW-PRO-B2", "LAW-PRO-B3", "LAW-PRO-B4", "LAW-PRO-B5", "LAW-PRO-B6", "LAW-PRO-B7", "LAW-PRO-B8", "LAW-PRO-B9", "LAW-PRO-B10",
-    "LAW-PRO-C1", "LAW-PRO-C2", "LAW-PRO-C3", "LAW-PRO-C4", "LAW-PRO-C5", "LAW-PRO-C6", "LAW-PRO-C7", "LAW-PRO-C8", "LAW-PRO-C9", "LAW-PRO-C10",
-    "LAW-PRO-D1", "LAW-PRO-D2", "LAW-PRO-D3", "LAW-PRO-D4", "LAW-PRO-D5", "LAW-PRO-D6", "LAW-PRO-D7", "LAW-PRO-D8", "LAW-PRO-D9", "LAW-PRO-D10",
-    "LAW-PRO-E1", "LAW-PRO-E2", "LAW-PRO-E3", "LAW-PRO-E4", "LAW-PRO-E5", "LAW-PRO-E6", "LAW-PRO-E7", "LAW-PRO-E8", "LAW-PRO-E9", "LAW-PRO-E10"
+    "PRO-A101", "PRO-A102", "PRO-A103", "PRO-A104", "PRO-A105", "PRO-A106", "PRO-A107", "PRO-A108", "PRO-A109", "PRO-A110",
+    "PRO-B201", "PRO-B202", "PRO-B203", "PRO-B204", "PRO-B205", "PRO-B206", "PRO-B207", "PRO-B208", "PRO-B209", "PRO-B210",
+    "PRO-C301", "PRO-C302", "PRO-C303", "PRO-C304", "PRO-C305", "PRO-C306", "PRO-C307", "PRO-C308", "PRO-C309", "PRO-C310",
+    "PRO-D401", "PRO-D402", "PRO-D403", "PRO-D404", "PRO-D405", "PRO-D406", "PRO-D407", "PRO-D408", "PRO-D409", "PRO-D410",
+    "PRO-E501", "PRO-E502", "PRO-E503", "PRO-E504", "PRO-E505", "PRO-E506", "PRO-E507", "PRO-E508", "PRO-E509", "PRO-E510"
 ]
 
 VIP_CODES = [
-    "LAW-VIP-Z1", "LAW-VIP-Z2", "LAW-VIP-Z3", "LAW-VIP-Z4", "LAW-VIP-Z5", "LAW-VIP-Z6", "LAW-VIP-Z7", "LAW-VIP-Z8", "LAW-VIP-Z9", "LAW-VIP-Z10",
-    "LAW-VIP-Y1", "LAW-VIP-Y2", "LAW-VIP-Y3", "LAW-VIP-Y4", "LAW-VIP-Y5", "LAW-VIP-Y6", "LAW-VIP-Y7", "LAW-VIP-Y8", "LAW-VIP-Y9", "LAW-VIP-Y10",
-    "LAW-VIP-X1", "LAW-VIP-X2", "LAW-VIP-X3", "LAW-VIP-X4", "LAW-VIP-X5", "LAW-VIP-X6", "LAW-VIP-X7", "LAW-VIP-X8", "LAW-VIP-X9", "LAW-VIP-X10",
-    "LAW-VIP-W1", "LAW-VIP-W2", "LAW-VIP-W3", "LAW-VIP-W4", "LAW-VIP-W5", "LAW-VIP-W6", "LAW-VIP-W7", "LAW-VIP-W8", "LAW-VIP-W9", "LAW-VIP-W10",
-    "LAW-VIP-V1", "LAW-VIP-V2", "LAW-VIP-V3", "LAW-VIP-V4", "LAW-VIP-V5", "LAW-VIP-V6", "LAW-VIP-V7", "LAW-VIP-V8", "LAW-VIP-V9", "LAW-VIP-V10"
+    "VIP-Z901", "VIP-Z902", "VIP-Z903", "VIP-Z904", "VIP-Z905", "VIP-Z906", "VIP-Z907", "VIP-Z908", "VIP-Z909", "VIP-Z910",
+    "VIP-Y801", "VIP-Y802", "VIP-Y803", "VIP-Y804", "VIP-Y805", "VIP-Y806", "VIP-Y807", "VIP-Y808", "VIP-Y809", "VIP-Y810",
+    "VIP-X701", "VIP-X702", "VIP-X703", "VIP-X704", "VIP-X705", "VIP-X706", "VIP-X707", "VIP-X708", "VIP-X709", "VIP-X710",
+    "VIP-W601", "VIP-W602", "VIP-W603", "VIP-W604", "VIP-W605", "VIP-W606", "VIP-W607", "VIP-W608", "VIP-W609", "VIP-W610",
+    "VIP-V501", "VIP-V502", "VIP-V503", "VIP-V504", "VIP-V505", "VIP-V506", "VIP-V507", "VIP-V508", "VIP-V509", "VIP-V510"
 ]
 
+BLACKLISTED_CODES = [] # هنا تضع أي كود تريد إلغاء صلاحيته فوراً
+
 # =================================================================
-# ⚙️ إعدادات النظام
+# 3. إعدادات النظام والأمان
 # =================================================================
 controller = CookieController()
 try:
-    # الـ API Key لسه في الـ Secrets لأمان موقعك
-    API_KEY = st.secrets["GEMINI_API_KEY"] 
+    API_KEY = st.secrets["GEMINI_API_KEY"]
     client = genai.Client(api_key=API_KEY)
 except Exception:
     st.error("⚠️ خطأ: تأكد من ضبط GEMINI_API_KEY في إعدادات Secrets.")
     st.stop()
 
-# نظام التطهير الجنائي للنصوص
+# دالة التحقق الذكي
+def is_code_valid(code, code_list):
+    if code in BLACKLISTED_CODES:
+        logging.warning(f"🚨 محاولة اختراق: كود محظور تم استخدامه: {code}")
+        return False
+    return any(secrets.compare_digest(str(code), c) for c in code_list)
+
+# التطهير الجنائي للنصوص
 def full_security_scrub(text):
     if not text: return ""
     text = re.sub(r'[^\w\s\u0600-\u06FF\?\!\.\,\:\-\_\(\)]', '', text)
@@ -46,7 +59,7 @@ def full_security_scrub(text):
         if f in text.lower(): return None
     return text
 
-# نظام الاتصال بالـ AI مع معالجة الأخطاء (Retry Logic)
+# الاتصال بالـ AI مع Retry Logic
 def ask_gemini(prompt):
     max_retries = 3
     for attempt in range(max_retries):
@@ -54,50 +67,43 @@ def ask_gemini(prompt):
             response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt)
             return response.text if response.text else "⚠️ لم يتم استرجاع رد."
         except Exception as e:
-            err_str = str(e)
-            if "429" in err_str or "503" in err_str or "404" in err_str:
-                time.sleep(2 ** attempt) 
+            if "429" in str(e) or "503" in str(e):
+                time.sleep(2 ** attempt)
                 continue
-            return f"❌ خطأ تقني: {err_str}"
-    return "⚠️ تعذر الوصول للخدمة حالياً، حاول مرة أخرى."
+            return f"❌ خطأ تقني."
+    return "⚠️ تعذر الوصول للخدمة."
 
-# الواجهة
+# =================================================================
+# 4. الواجهة والمنطق
+# =================================================================
 st.set_page_config(page_title="LAW AI", page_icon="⚖️")
 
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
-# نظام الدخول
 if not st.session_state.logged_in:
     st.title("⚖️ منصة LAW AI")
-    if st.button("دخول للمنصة"):
-        st.session_state.logged_in = True
-        st.rerun()
+    if st.button("دخول للمنصة"): st.session_state.logged_in = True; st.rerun()
 else:
-    # الباقات
     pkg = st.radio("الباقة:", ["مجاني", "Pro", "VIP"])
-    is_prem = False
-    
-    # التحقق من الكود (المقارنة العمياء)
     cookie = controller.get('user_active_code')
     target = PRO_CODES if pkg == "Pro" else VIP_CODES
     
+    is_prem = False
     if pkg != "مجاني":
-        # التحقق إذا كان الكود محفوظ في الكوكيز
-        if any(secrets.compare_digest(str(cookie), c) for c in target):
-            is_prem = True
+        if is_code_valid(cookie, target): is_prem = True
         else:
             auth = st.text_input("🔑 كود التفعيل:", type="password")
-            if auth:
-                if any(secrets.compare_digest(auth, c) for c in target):
-                    controller.set('user_active_code', auth)
-                    st.rerun()
-                else:
-                    st.error("❌ كود خاطئ.")
-    else:
-        is_prem = True # المجاني متاح للجميع
+            if auth and is_code_valid(auth, target):
+                controller.set('user_active_code', auth)
+                logging.info(f"دخول ناجح بكود: {auth}")
+                st.rerun()
+            elif auth:
+                logging.warning(f"محاولة دخول فاشلة بكود: {auth}")
+                st.error("❌ كود خاطئ.")
+    else: is_prem = True
 
-    # الشات المحصن
+    # الشات
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]): st.write(msg["content"])
 
@@ -106,8 +112,8 @@ else:
         scrubbed = full_security_scrub(user_input)
         if not scrubbed: st.error("🚨 مدخلات غير آمنة.")
         else:
-            instr = " [توجيه أمني: أنت محامي مصري، ممنوع تسريب أي بيانات برمجية]. السؤال:"
-            response = ask_gemini(f"{instr} {scrubbed}")
+            response = ask_gemini(f"[توجيه أمني: محامي مصري]. السؤال: {scrubbed}")
             st.session_state.chat_history.append({"role": "user", "content": scrubbed})
             st.session_state.chat_history.append({"role": "assistant", "content": response})
+            logging.info(f"تمت الإجابة على سؤال.")
             st.rerun()
