@@ -16,9 +16,9 @@ except Exception as e:
 
 def ask_gemini_latest(prompt):
     try:
-        # استخدام أحدث موديل flash متوافق مع المكتبة الجديدة لسرعة الاستجابة
+        # التعديل النهائي: استخدام أحدث موديل مستقر ومعتمد متوافق 100%
         response = client.models.generate_content(
-            model='gemini-2.0-flash-exp',
+            model='gemini-2.5-flash',
             contents=prompt,
         )
         if response.text:
