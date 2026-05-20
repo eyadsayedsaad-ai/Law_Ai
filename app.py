@@ -29,6 +29,10 @@ def ask_gemini_latest(prompt):
             else:
                 return "⚠️ تم الاتصال بنجاح ولكن لم يتم إرجاع نص."
         except Exception as e:
+            # الحل الذكي: لو استهلكت الليميت المجاني (429)، يعطيه رسالة تنبيه هادئة بدل الإيرور
+            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                return "⚠️ السيرفر عليه ضغط حالياً بسبب حدود الاستخدام المجاني، فضلاً انتظر 30 ثانية واكتب سؤالك مجدداً تلقائياً."
+            
             if "503" in str(e) and attempt < max_retries - 1:
                 time.sleep(backoff_time)
                 backoff_time *= 1.5
@@ -41,7 +45,6 @@ def ask_gemini_latest(prompt):
 st.set_page_config(page_title="LAW AI - منصة المستشار الرقمية", page_icon="⚖️", layout="centered")
 
 # --- [ 🔑 قائمة أكواد باقة الـ Pro - شهر مايو ] ---
-# الأكواد مقسمة بأسماء وأرقام واضحة جداً عشان تفتكر اديت إيه لمين ومستحيل تتلخبط
 ALLOWED_PRO_CODES = [
     "M5_PRO_AHMED_01",
     "M5_PRO_MOHAMED_02",
