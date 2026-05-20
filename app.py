@@ -7,7 +7,7 @@ from google import genai
 
 # قراءة المفتاح بأمان من إعدادات السيرفر المخفية
 try:
-    GENAI_API_KEY = st.secrets["GEMINI_API_KEY"]
+    GENAI_API_KEY = st.secrets["AIzaSyARqrjEaGposXGyEnSnsn5eyvji1LGFCdo"]
     client = genai.Client(api_key=GENAI_API_KEY)
 except Exception as e:
     st.error("⚠️ عذراً، مفتاح الـ API غير مضبوط في إعدادات السيرفر المخفية (Secrets).")
