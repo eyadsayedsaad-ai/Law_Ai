@@ -2,16 +2,18 @@ import streamlit as st
 from google import genai
 
 # =================================================================
-# ⚙️ إعدادات الذكاء الاصطناعي الرسمية (التحديث الأحدث لشركة جوجل)
+# ⚙️ إعدادات الذكاء الاصطناعي (أمان كامل عبر Streamlit Secrets)
 # =================================================================
-GENAI_API_KEY = "AIzaSyA2GFoA14J8GSPN5qoHqRL8tFOsn445FXw"
 
-# تشغيل الـ Client الجديد كلياً حسب التحديث الأخير لـ google-genai
-client = genai.Client(api_key=GENAI_API_KEY)
+# قراءة المفتاح بأمان من إعدادات السيرفر المخفية
+try:
+    GENAI_API_KEY = st.secrets["GEMINI_API_KEY"]
+    client = genai.Client(api_key=GENAI_API_KEY)
+except Exception as e:
+    st.error("⚠️ عذراً، مفتاح الـ API غير مضبوط في إعدادات السيرفر المخفية (Secrets).")
 
 def ask_gemini_latest(prompt):
     try:
-        # الموديل الأحدث المتوافق 100% مع المكتبة الجديدة
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,
