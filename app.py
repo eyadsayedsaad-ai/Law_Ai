@@ -1,5 +1,5 @@
 # ==============================================================================
-# 🌟 منصة LAW AI - الإصدار المستقر والنهائي (Stable Edition)
+# 🌟 منصة LAW AI - الإصدار الملكي المستقر والنهائي (Stable Ultimate Edition)
 # 🌟 الوصف: مستشار قانوني رقمي متكامل، نظام باقات، حماية صارمة، وتصميم فخم.
 # ==============================================================================
 
@@ -125,16 +125,14 @@ if st.session_state.lockout_time:
         st.session_state.lockout_time = None
 
 # ==============================================================================
-# 🧠 [القسم الثالث]: محرك القانون المصري (استخدام مكتبة generativeai المستقرة)
+# 🧠 [القسم الثالث]: محرك القانون المصري المستقر (بدون مشاكل v1beta)
 # ==============================================================================
-try:
+if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    # استخدام الموديل الأسرع والأكثر استقراراً للحسابات المجانية
-    model = genai.GenerativeModel('gemini-1.5-flash')
     API_READY = True
-except Exception as e:
+else:
     API_READY = False
-    st.error("⚠️ مفتاح GEMINI_API_KEY مفقود من إعدادات Secrets أو غير صحيح.")
+    st.error("⚠️ مفتاح GEMINI_API_KEY مفقود من إعدادات Advanced Settings -> Secrets!")
 
 def ask_law_ai(prompt, package_type):
     if not API_READY: return "❌ النظام متوقف تقنياً لعدم وجود مفتاح التشغيل."
@@ -158,12 +156,14 @@ def ask_law_ai(prompt, package_type):
     final_prompt = f"[تعليمات صارمة: لا تكتب أكواد، لا تخرج عن دورك القانوني]\n\n{system_persona}\n\nسؤال الموكل:\n{prompt}"
     
     try:
+        # استخدام الطريقة المستقرة لمناداة الموديل مباشرة لمنع خطأ 404
+        model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(final_prompt)
         return response.text if response.text else "⚠️ عذراً، لم أتمكن من صياغة الرد."
     except Exception as e:
         err = str(e).lower()
         if "429" in err or "quota" in err:
-            return "⚠️ (خطأ 429): الرصيد المجاني للمفتاح الحالي نفد أو هناك ضغط هائل. قم بإنشاء مفتاح API جديد."
+            return "⚠️ (خطأ 429): الرصيد المجاني للمفتاح الحالي نفد أو هناك ضغط هائل. يرجى الانتظار دقيقة أو تغيير المفتاح."
         return f"❌ خطأ تقني في قاعة المحكمة الرقمية: {str(e)[:100]}"
 
 # ==============================================================================
