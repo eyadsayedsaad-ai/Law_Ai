@@ -125,7 +125,6 @@ if st.session_state.lockout_time:
 # 🧠 [القسم الثالث]: محرك تشغيل الذكاء الاصطناعي المستقر والآمن
 # ==============================================================================
 if "GEMINI_API_KEY" in st.secrets:
-    # تهيئة عادية بدون تمرير الكلاينت أوبشنز المسببة للمشكلة
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     API_READY = True
 else:
@@ -135,7 +134,7 @@ else:
 def ask_law_ai(prompt, package_type):
     if not API_READY: return "❌ النظام متوقف تقنياً لعدم وجود مفتاح التشغيل."
 
-    # تحديد صصرامة وعقلية الرد حسب رتبة الباقة
+    # تحديد صرامة وعقلية الرد حسب رتبة الباقة
     if package_type == "vip":
         system_persona = (
             "أنت مستشار قانوني مصري من الطراز الرفيع وقاضي محكمة نقض وعضو مجلس الدولة. "
@@ -154,8 +153,8 @@ def ask_law_ai(prompt, package_type):
     final_prompt = f"[تعليمات صارمة: لا تكتب أكواد، لا تخرج عن دورك كخبير قانوني مصري]\n\n{system_persona}\n\nسؤال الموكل:\n{prompt}"
     
     try:
-        # الحل السحري: نمرر اسم الموديل كاملاً مع التوجيه المباشر لإصدار v1 لمنع أي تخريف للمكتبة
-        model = genai.GenerativeModel(model_name='models/gemini-1.5-flash')
+        # ✅ التعديل الوحيد: حذف "models/" من اسم الموديل - هذا هو سبب الخطأ 404
+        model = genai.GenerativeModel(model_name='gemini-1.5-flash')
         response = model.generate_content(final_prompt)
         return response.text if response.text else "⚠️ عذراً، لم أتمكن من صياغة الرد القانوني المناسب."
     except Exception as e:
