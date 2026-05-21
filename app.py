@@ -1,7 +1,7 @@
 # ==============================================================================
-# 🌟 منصة LAW AI - الإصدار الأسطوري النهائي والمستقر 100%
+# 🌟 منصة LAW AI - النسخة المستقرة والنهائية 100%
 # 🌟 المبرمج الرئيسي: البطل أنس
-# 🌟 الوصف: مستشار قانوني، نظام باقات كامل، حماية كوكيز، ومكافحة Spam
+# 🌟 الوصف: مستشار قانوني، نظام باقات كامل، حماية كوكيز، وتأمين السيرفر
 # ==============================================================================
 
 import streamlit as st
@@ -96,7 +96,6 @@ st.markdown("""
 controller = CookieController()
 
 def sanitize_input(text):
-    """تصفية حاسمة للمدخلات لمنع الرموز الضارة أو محاولات الاختراق"""
     if not text: return ""
     clean_text = re.sub(r'[^a-zA-Z0-9\s\u0600-\u06FF\?\!\.\,\:\-\_\(\)\'\"\n]', '', text)
     blacklist = ["<script", "javascript:", "union select", "drop table", "exec(", "ignore previous"]
@@ -104,14 +103,12 @@ def sanitize_input(text):
         return None
     return clean_text.strip()
 
-# تهيئة كاملة وبدون أي نقص لمتغيرات الجلسة (Session State)
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 if "failed_attempts" not in st.session_state: st.session_state.failed_attempts = 0
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 if "lockout_time" not in st.session_state: st.session_state.lockout_time = None
 if "msg_timestamps" not in st.session_state: st.session_state.msg_timestamps = []
 
-# نظام حظر التخمين العنيف المؤقت (Anti-Brute Force Lockout)
 if st.session_state.lockout_time:
     elapsed = (datetime.datetime.now() - st.session_state.lockout_time).total_seconds()
     if elapsed < 120:
@@ -122,7 +119,7 @@ if st.session_state.lockout_time:
         st.session_state.lockout_time = None
 
 # ==============================================================================
-# 🧠 [القسم الثالث]: محرك تشغيل الذكاء الاصطناعي المستقر والآمن
+# 🧠 [القسم الثالث]: محرك تشغيل الذكاء الاصطناعي المستقر
 # ==============================================================================
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
@@ -134,13 +131,11 @@ else:
 def ask_law_ai(prompt, package_type):
     if not API_READY: return "❌ النظام متوقف تقنياً لعدم وجود مفتاح التشغيل."
 
-    # تحديد صرامة وعقلية الرد حسب رتبة الباقة
     if package_type == "vip":
         system_persona = (
             "أنت مستشار قانوني مصري من الطراز الرفيع وقاضي محكمة نقض وعضو مجلس الدولة. "
             "مهمتك تحليل القضية المعروضة من كافة الجوانب، ذكر ثغرات الخصم، "
-            "وضع استراتيجية دفاع محكمة، والاستناد الحتمي لأرقام المواد في القانون المدني أو الجنائي المصري. "
-            "استخدم لغة قانونية فخمة ورصينة."
+            "وضع استراتيجية دفاع محكمة، والاستناد الحتمي لأرقام المواد في القانون المصري."
         )
     elif package_type == "pro":
         system_persona = (
@@ -150,21 +145,18 @@ def ask_law_ai(prompt, package_type):
     else:
         system_persona = "أنت مساعد قانوني مصري بسيط. قدم إجابة قانونية مباشرة، صحيحة، ومختصرة جداً."
 
-    final_prompt = f"[تعليمات صارمة: لا تكتب أكواد، لا تخرج عن دورك كخبير قانوني مصري]\n\n{system_persona}\n\nسؤال الموكل:\n{prompt}"
+    final_prompt = f"{system_persona}\n\nسؤال الموكل:\n{prompt}"
     
     try:
-        # ✅ التعديل الوحيد: حذف "models/" من اسم الموديل - هذا هو سبب الخطأ 404
-        model = genai.GenerativeModel(model_name='gemini-1.5-flash')
+        # استخدام الصياغة الرسمية المستقرة تماماً لمعالجة النصوص
+        model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(final_prompt)
         return response.text if response.text else "⚠️ عذراً، لم أتمكن من صياغة الرد القانوني المناسب."
     except Exception as e:
-        err = str(e).lower()
-        if "429" in err or "quota" in err:
-            return "⚠️ (خطأ 429): الرصيد المجاني للمفتاح الحالي نفد. يرجى الانتظار دقيقة."
-        return f"❌ خطأ تقني في قاعة المحكمة الرقمية: {str(e)[:150]}"
+        return f"❌ خطأ في الاتصال بالسيرفر، برجاء التحقق بعد إعادة تشغيل التطبيق: {str(e)[:100]}"
 
 # ==============================================================================
-# 🔑 [القسم الرابع]: قواعد بيانات الباقات كاملة (جميع الأكواد الـ 35 بالتفصيل)
+# 🔑 [القسم الرابع]: قواعد بيانات الباقات كاملة
 # ==============================================================================
 ALLOWED_PRO_CODES = [
     "M5_PRO_AHMED_01", "M5_PRO_MOHAMED_02", "M5_PRO_MAHMOUD_03", "M5_PRO_MOSTAFA_04", "M5_PRO_ALI_05",
@@ -183,7 +175,6 @@ ALLOWED_VIP_CODES = [
 # 🏛️ [القسم الخامس]: واجهات العرض والـ Frontend الكامل للموقع
 # ==============================================================================
 if not st.session_state.logged_in:
-    # شاشة ترحيب الدخول الأولى للمنصة
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     st.markdown("<h1>⚖️ LAW AI</h1>", unsafe_allow_html=True)
     st.markdown("<h3>بوابتك الذكية والآمنة للقانون المصري</h3>", unsafe_allow_html=True)
@@ -195,7 +186,6 @@ if not st.session_state.logged_in:
             st.session_state.logged_in = True
             st.rerun()
 else:
-    # --- شريط التحكم الجانبي الكامل (Sidebar) ---
     with st.sidebar:
         st.markdown("<h2>⚙️ لوحة القيادة</h2>", unsafe_allow_html=True)
         st.write("---")
@@ -209,20 +199,16 @@ else:
             st.session_state.chat_history = []
             st.rerun()
             
-    # --- رأس الصفحة الرئيسية الحية ---
     st.title("⚖️ قاعة الاستشارات القانونية الرقمية")
     st.markdown("<p style='text-align: center; color: #888;'>اختر رتبة وحجم باقة المستشار القانوني لليوم</p>", unsafe_allow_html=True)
     
-    # اختيار نوع الباقة الحالية
     chosen_package = st.radio("", ["🟢 باقة مجانية (إجابة سريعة)", "🔵 باقة المحامي (Pro)", "👑 باقة المستشار الملكي (VIP)"], horizontal=True)
     
     is_premium = False
     current_role = "free"
     
-    # محاولة قراءة الكود المخزن مسبقاً في كوكيز متصفح الموكل
     saved_cookie = str(controller.get('user_active_code'))
 
-    # تفاصيل تشغيل باقة Pro
     if "Pro" in chosen_package:
         if any(secrets.compare_digest(saved_cookie, c) for c in ALLOWED_PRO_CODES):
             st.success("🔵 باقة المـحـامـي (Pro) مفعلة تلقائياً عبر الكوكيز.")
@@ -242,7 +228,6 @@ else:
                         st.rerun()
                     st.error(f"❌ كود خاطئ. متبقي {5 - st.session_state.failed_attempts} محاولات.")
                     
-    # تفاصيل تشغيل باقة VIP الملكية
     elif "VIP" in chosen_package:
         if any(secrets.compare_digest(saved_cookie, c) for c in ALLOWED_VIP_CODES):
             st.warning("👑 باقة المـسـتـشـار الملكي (VIP) مفعلة بكامل الصلاحيات.")
@@ -262,21 +247,17 @@ else:
                         st.rerun()
                     st.error(f"❌ كود خاطئ. متبقي {5 - st.session_state.failed_attempts} محاولات.")
     else:
-        # الباقة المجانية مفتوحة دائماً
         is_premium, current_role = True, "free"
 
-    # --- نظام التفاعل الحي وإرسال واستقبال الرسائل الكامل ---
     if is_premium:
         st.write("---")
         
-        # طباعة الشات التاريخي للمستخدم والمستشار بالترتيب والتصميم الذهبي الفخم
         for msg in st.session_state.chat_history:
             if msg["role"] == "user":
                 st.markdown(f"<div align='right' class='user-bubble'>👤 <b>سؤالك:</b><br>{msg['content']}</div>", unsafe_allow_html=True)
             else:
                 st.markdown(f"<div align='right' class='ai-bubble'>⚖️ <b>المستشار:</b><br>{msg['content']}</div>", unsafe_allow_html=True)
 
-        # استقبال استشارة جديدة وحمايتها ضد الإرسال السريع جداً (Spam)
         if prompt := st.chat_input("اكتب وقائع قضيتك أو سؤالك القانوني هنا بالتفصيل..."):
             clean_prompt = sanitize_input(prompt)
             if clean_prompt:
@@ -289,7 +270,6 @@ else:
                     st.session_state.chat_history.append({"role": "user", "content": clean_prompt})
                     st.markdown(f"<div align='right' class='user-bubble'>👤 <b>سؤالك:</b><br>{clean_prompt}</div>", unsafe_allow_html=True)
                     
-                    # استدعاء وعرض رد المستشار القانوني بـ Spinner فخم
                     with st.spinner("⚖️ يقوم المستشار الآن بمراجعة الحيثيات ومواد القانون المصري..."):
                         response = ask_law_ai(clean_prompt, current_role)
                         st.session_state.chat_history.append({"role": "assistant", "content": response})
