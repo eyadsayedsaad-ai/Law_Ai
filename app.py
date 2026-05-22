@@ -5,7 +5,7 @@
 # ==============================================================================
 
 import streamlit as st
-from google import genai
+from groq import Groq
 import re
 import datetime
 import time
@@ -112,10 +112,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 🧠 [القسم الثاني]: تهيئة الذكاء الاصطناعي بالمكتبة الجديدة
+# 🧠 [القسم الثاني]: تهيئة الذكاء الاصطناعي (Groq)
 # ==============================================================================
-GEMINI_API_KEY = "AIzaSyA04JEB9DewFgP6nBBhJ33iTmk2XU0xVOQ"
-client = genai.Client(api_key=GEMINI_API_KEY)
+GROQ_API_KEY = "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"
+client = Groq(api_key=GROQ_API_KEY)
 
 # ==============================================================================
 # 🛡️ [القسم الثالث]: تهيئة متغيرات الجلسة والحماية
@@ -148,7 +148,7 @@ if st.session_state.lockout_time:
         st.session_state.lockout_time = None
 
 # ==============================================================================
-# 🤖 [القسم الرابع]: محرك الذكاء الاصطناعي
+# 🤖 [القسم الرابع]: محرك الذكاء الاصطناعي (Groq)
 # ==============================================================================
 def ask_law_ai(prompt, package_type):
     if package_type == "vip":
@@ -166,18 +166,21 @@ def ask_law_ai(prompt, package_type):
     else:
         system_persona = "أنت مساعد قانوني مصري بسيط. قدم إجابة قانونية مباشرة، صحيحة، ومختصرة جداً."
 
-    final_prompt = f"[تعليمات صارمة: لا تكتب أكواد، لا تخرج عن دورك كخبير قانوني مصري]\n\n{system_persona}\n\nسؤال الموكل:\n{prompt}"
-    
     try:
-        response = client.models.generate_content(
-            model='gemini-2.0-flash',
-            contents=final_prompt
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": f"تعليمات صارمة: لا تكتب أكواد، لا تخرج عن دورك كخبير قانوني مصري.\n\n{system_persona}"},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=2000,
+            temperature=0.7
         )
-        return response.text if response.text else "⚠️ عذراً، لم أتمكن من صياغة الرد القانوني المناسب."
+        return response.choices[0].message.content
     except Exception as e:
         err = str(e).lower()
-        if "429" in err or "quota" in err:
-            return "⚠️ (خطأ 429): الرصيد المجاني للمفتاح الحالي نفد. يرجى الانتظار دقيقة."
+        if "429" in err or "quota" in err or "rate" in err:
+            return "⚠️ تم تجاوز الحد المسموح من الطلبات. يرجى الانتظار دقيقة."
         return f"❌ خطأ تقني في قاعة المحكمة الرقمية: {str(e)[:150]}"
 
 # ==============================================================================
