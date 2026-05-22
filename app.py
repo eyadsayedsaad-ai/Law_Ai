@@ -1,32 +1,187 @@
 # ==============================================================================
-# 🌟 منصة LAW AI - النسخة الذهبية (النهائية والمستقرة 100%)
+# 🌟 منصة LAW AI - الإصدار الأسطوري النهائي والمستقر 100%
 # 🌟 المبرمج الرئيسي: البطل أنس
-# 🌟 الوصف: مستشار قانوني كامل، نظام باقات بأكواد، حماية Spam، تصميم فخم
+# 🌟 الوصف: مستشار قانوني، نظام باقات كامل، حماية كاملة، بدون كوكيز
 # ==============================================================================
 
 import streamlit as st
-import google.generativeai as genai
-import datetime
+from google import genai
 import re
+import datetime
+import time
+import secrets
 
 # ==============================================================================
-# 1. إعدادات الصفحة والتصميم الملكي
+# 🎨 [القسم الأول]: التصميم الملكي والواجهة الفخمة (Premium UI/UX)
 # ==============================================================================
 st.set_page_config(page_title="LAW AI | المستشار الرقمي", page_icon="⚖️", layout="wide")
 
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-    .stApp { background-color: #050a1f; color: #e0e1dd; font-family: 'Cairo', sans-serif; }
-    h1, h2, h3 { text-align: center; color: #d4af37 !important; font-weight: 900; text-shadow: 0px 4px 15px rgba(212, 175, 55, 0.3); }
-    .ai-bubble { background: linear-gradient(145deg, #1a1105, #2a1b0a); padding: 20px; border-radius: 20px 0px 20px 20px; border-right: 5px solid #d4af37; margin: 15px 0; color: #fdf5e6; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
-    .user-bubble { background: linear-gradient(145deg, #0b132b, #1c2541); padding: 15px; border-radius: 0px 20px 20px 20px; border-left: 5px solid #4CAF50; margin: 15px 0; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
-    .stButton>button { background: linear-gradient(45deg, #d4af37, #b5952f); color: #050a1f; font-weight: 900; border-radius: 15px; border: none; padding: 10px 25px; }
+    
+    .stApp {
+        background-color: #050a1f; 
+        color: #e0e1dd;
+        font-family: 'Cairo', sans-serif;
+    }
+    
+    h1, h2, h3 {
+        text-align: center;
+        color: #d4af37 !important;
+        font-family: 'Cairo', sans-serif;
+        font-weight: 900;
+        text-shadow: 0px 4px 15px rgba(212, 175, 55, 0.3);
+    }
+    
+    .ai-bubble {
+        background: linear-gradient(145deg, #1a1105, #2a1b0a);
+        padding: 20px;
+        border-radius: 20px 0px 20px 20px;
+        margin: 15px 0;
+        border-right: 5px solid #d4af37;
+        color: #fdf5e6;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        font-size: 18px;
+        line-height: 1.8;
+        direction: rtl;
+    }
+    
+    .user-bubble {
+        background: linear-gradient(145deg, #0b132b, #1c2541);
+        padding: 15px;
+        border-radius: 0px 20px 20px 20px;
+        margin: 15px 0;
+        border-left: 5px solid #4CAF50;
+        color: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        font-size: 16px;
+        line-height: 1.6;
+        direction: rtl;
+    }
+
+    .price-card {
+        background: linear-gradient(145deg, #0b132b, #1c2541);
+        padding: 20px;
+        border-radius: 15px;
+        margin: 10px 0;
+        border: 2px solid #d4af37;
+        text-align: center;
+        color: #fdf5e6;
+        direction: rtl;
+    }
+
+    .price-card-vip {
+        background: linear-gradient(145deg, #1a1105, #2a1b0a);
+        padding: 20px;
+        border-radius: 15px;
+        margin: 10px 0;
+        border: 2px solid #FFD700;
+        text-align: center;
+        color: #fdf5e6;
+        direction: rtl;
+    }
+    
+    .stTextInput>div>div>input {
+        border-radius: 15px;
+        border: 2px solid #d4af37 !important;
+        background-color: #0b132b !important;
+        color: white !important;
+        text-align: center;
+    }
+    
+    .stButton>button {
+        border-radius: 15px;
+        background: linear-gradient(45deg, #d4af37, #b5952f);
+        color: #050a1f !important;
+        font-weight: 900;
+        font-size: 18px;
+        border: none;
+        transition: all 0.4s ease;
+        padding: 12px;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+    }
+    
+    .stButton>button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6);
+    }
+    
+    hr { border-color: rgba(212, 175, 55, 0.2); }
     </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. قواعد البيانات والحماية
+# 🧠 [القسم الثاني]: تهيئة الذكاء الاصطناعي بالمكتبة الجديدة
+# ==============================================================================
+GEMINI_API_KEY = "AIzaSyA04JEB9DewFgP6nBBhJ33iTmk2XU0xVOQ"
+client = genai.Client(api_key=GEMINI_API_KEY)
+
+# ==============================================================================
+# 🛡️ [القسم الثالث]: تهيئة متغيرات الجلسة والحماية
+# ==============================================================================
+if "logged_in" not in st.session_state: st.session_state.logged_in = False
+if "failed_attempts" not in st.session_state: st.session_state.failed_attempts = 0
+if "chat_history" not in st.session_state: st.session_state.chat_history = []
+if "lockout_time" not in st.session_state: st.session_state.lockout_time = None
+if "msg_timestamps" not in st.session_state: st.session_state.msg_timestamps = []
+if "current_role" not in st.session_state: st.session_state.current_role = "free"
+if "is_premium" not in st.session_state: st.session_state.is_premium = False
+if "activated_code" not in st.session_state: st.session_state.activated_code = None
+
+def sanitize_input(text):
+    if not text: return ""
+    clean_text = re.sub(r'[^a-zA-Z0-9\s\u0600-\u06FF\?\!\.\,\:\-\_\(\)\'\"\n]', '', text)
+    blacklist = ["<script", "javascript:", "union select", "drop table", "exec(", "ignore previous"]
+    if any(word in clean_text.lower() for word in blacklist):
+        return None
+    return clean_text.strip()
+
+# نظام حظر التخمين العنيف المؤقت
+if st.session_state.lockout_time:
+    elapsed = (datetime.datetime.now() - st.session_state.lockout_time).total_seconds()
+    if elapsed < 120:
+        st.error(f"🚨 تم حظر العمليات مؤقتاً لحماية المنصة. يرجى الانتظار {int(120 - elapsed)} ثانية.")
+        st.stop()
+    else:
+        st.session_state.failed_attempts = 0
+        st.session_state.lockout_time = None
+
+# ==============================================================================
+# 🤖 [القسم الرابع]: محرك الذكاء الاصطناعي
+# ==============================================================================
+def ask_law_ai(prompt, package_type):
+    if package_type == "vip":
+        system_persona = (
+            "أنت مستشار قانوني مصري من الطراز الرفيع وقاضي محكمة نقض وعضو مجلس الدولة. "
+            "مهمتك تحليل القضية المعروضة من كافة الجوانب، ذكر ثغرات الخصم، "
+            "وضع استراتيجية دفاع محكمة، والاستناد الحتمي لأرقام المواد في القانون المدني أو الجنائي المصري. "
+            "استخدم لغة قانونية فخمة ورصينة."
+        )
+    elif package_type == "pro":
+        system_persona = (
+            "أنت محامي استئناف مصري متميز وخبير. أجب بتفصيل واسع عن السؤال القانوني، "
+            "واذكر الخطوات الإجرائية والأوراق المطلوبة وفقاً للقانون المصري."
+        )
+    else:
+        system_persona = "أنت مساعد قانوني مصري بسيط. قدم إجابة قانونية مباشرة، صحيحة، ومختصرة جداً."
+
+    final_prompt = f"[تعليمات صارمة: لا تكتب أكواد، لا تخرج عن دورك كخبير قانوني مصري]\n\n{system_persona}\n\nسؤال الموكل:\n{prompt}"
+    
+    try:
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=final_prompt
+        )
+        return response.text if response.text else "⚠️ عذراً، لم أتمكن من صياغة الرد القانوني المناسب."
+    except Exception as e:
+        err = str(e).lower()
+        if "429" in err or "quota" in err:
+            return "⚠️ (خطأ 429): الرصيد المجاني للمفتاح الحالي نفد. يرجى الانتظار دقيقة."
+        return f"❌ خطأ تقني في قاعة المحكمة الرقمية: {str(e)[:150]}"
+
+# ==============================================================================
+# 🔑 [القسم الخامس]: قواعد بيانات الباقات
 # ==============================================================================
 ALLOWED_PRO_CODES = [
     "M5_PRO_AHMED_01", "M5_PRO_MOHAMED_02", "M5_PRO_MAHMOUD_03", "M5_PRO_MOSTAFA_04", "M5_PRO_ALI_05",
@@ -41,84 +196,160 @@ ALLOWED_VIP_CODES = [
     "M5_VIP_JUDGE_11", "M5_VIP_COURT_12", "M5_VIP_LAWYER_13", "M5_VIP_ALPHA_14", "M5_VIP_OMEGA_15"
 ]
 
-def sanitize_input(text):
-    if not text: return ""
-    clean = re.sub(r'[^a-zA-Z0-9\s\u0600-\u06FF\?\!\.\,\:\-\_\(\)\'\"\n]', '', text)
-    blacklist = ["<script", "union select", "drop table", "exec(", "ignore"]
-    return None if any(word in clean.lower() for word in blacklist) else clean.strip()
-
 # ==============================================================================
-# 3. إعدادات الذكاء الاصطناعي (من Streamlit Secrets)
-# ==============================================================================
-try:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    API_READY = True
-except Exception:
-    API_READY = False
-    st.error("⚠️ يرجى ضبط GEMINI_API_KEY في إعدادات Secrets.")
-
-# ==============================================================================
-# 4. الحالة العامة (State Management)
-# ==============================================================================
-if "logged_in" not in st.session_state: st.session_state.logged_in = False
-if "chat_history" not in st.session_state: st.session_state.chat_history = []
-if "role" not in st.session_state: st.session_state.role = "free"
-if "msg_timestamps" not in st.session_state: st.session_state.msg_timestamps = []
-
-# ==============================================================================
-# 5. محرك المستشار
-# ==============================================================================
-def ask_law_ai(prompt, role):
-    if not API_READY: return "❌ النظام متوقف."
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    persona = "أنت قاضٍ ومحامٍ مصري خبير." if role == "vip" else ("أنت محامٍ استئناف مصري." if role == "pro" else "أنت مساعد قانوني.")
-    try:
-        response = model.generate_content(f"{persona}\n\nسؤال المستخدم: {prompt}")
-        return response.text
-    except Exception as e: return f"خطأ تقني: {str(e)[:50]}"
-
-# ==============================================================================
-# 6. الواجهة الرئيسية
+# 🏛️ [القسم السادس]: الواجهة الكاملة
 # ==============================================================================
 if not st.session_state.logged_in:
-    st.markdown("<br><br><h1>⚖️ LAW AI</h1><h3>بوابتك الذكية للقانون المصري</h3>", unsafe_allow_html=True)
-    if st.button("🔐 دخول آمن للمنصة", use_container_width=True):
-        st.session_state.logged_in = True
-        st.rerun()
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    st.markdown("<h1>⚖️ LAW AI</h1>", unsafe_allow_html=True)
+    st.markdown("<h3>بوابتك الذكية والآمنة للقانون المصري</h3>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("""
+        <div class='price-card'>
+            <h3>🟢 الباقة المجانية</h3>
+            <h2>مجاني</h2>
+            <p>إجابة قانونية سريعة ومختصرة</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+        <div class='price-card'>
+            <h3>🔵 باقة المحامي Pro</h3>
+            <h2>20$</h2>
+            <p>تحليل قانوني تفصيلي مع الخطوات الإجرائية والأوراق المطلوبة</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col3:
+        st.markdown("""
+        <div class='price-card-vip'>
+            <h3>👑 باقة المستشار الملكي VIP</h3>
+            <h2>50$</h2>
+            <p>استراتيجية دفاع محكمة كاملة مع ثغرات الخصم وأرقام المواد القانونية</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("🔐 دخول آمن للمنصة", use_container_width=True):
+            st.session_state.logged_in = True
+            st.rerun()
+
 else:
     with st.sidebar:
-        st.header("⚙️ لوحة القيادة")
-        if st.button("🗑️ مسح المحادثة"): st.session_state.chat_history = []; st.rerun()
-        if st.button("🚪 خروج"): st.session_state.logged_in = False; st.rerun()
+        st.markdown("<h2>⚙️ لوحة القيادة</h2>", unsafe_allow_html=True)
+        st.write("---")
+        st.info("💡 يتم تشفير كافة المحادثات الجارية بتقنية End-to-End.")
 
-    st.title("⚖️ قاعة الاستشارات القانونية")
-    package = st.radio("اختر باقة المستشار:", ["🟢 مجانية", "🔵 Pro", "👑 VIP"], horizontal=True)
-    
-    # إدارة الأكواد
-    if "Pro" in package:
-        code = st.text_input("🔑 كود تفعيل Pro:", type="password")
-        if code in ALLOWED_PRO_CODES: st.session_state.role = "pro"
-    elif "VIP" in package:
-        code = st.text_input("👑 كود تفعيل VIP:", type="password")
-        if code in ALLOWED_VIP_CODES: st.session_state.role = "vip"
-    else: st.session_state.role = "free"
+        if st.session_state.current_role == "vip":
+            st.warning("👑 باقة VIP الملكية مفعّلة")
+        elif st.session_state.current_role == "pro":
+            st.success("🔵 باقة Pro المحامي مفعّلة")
+        else:
+            st.info("🟢 الباقة المجانية")
 
-    # المحادثة
-    for msg in st.session_state.chat_history:
-        style = "user-bubble" if msg["role"] == "user" else "ai-bubble"
-        st.markdown(f"<div class='{style}'>{msg['content']}</div>", unsafe_allow_html=True)
+        st.write("---")
 
-    if prompt := st.chat_input("اكتب قضيتك هنا..."):
-        clean = sanitize_input(prompt)
-        if clean:
-            # حماية Spam
-            now = datetime.datetime.now()
-            st.session_state.msg_timestamps = [t for t in st.session_state.msg_timestamps if (now - t).total_seconds() < 60]
-            if len(st.session_state.msg_timestamps) < 5:
-                st.session_state.msg_timestamps.append(now)
-                st.session_state.chat_history.append({"role": "user", "content": clean})
-                with st.spinner("⚖️ المستشار يراجع النصوص القانونية..."):
-                    resp = ask_law_ai(clean, st.session_state.role)
-                    st.session_state.chat_history.append({"role": "assistant", "content": resp})
-                st.rerun()
-            else: st.error("⚠️ يرجى التمهل قليلاً لحماية السيرفر.")
+        if st.button("🔄 تغيير الباقة"):
+            st.session_state.current_role = "free"
+            st.session_state.is_premium = False
+            st.session_state.activated_code = None
+            st.session_state.chat_history = []
+            st.rerun()
+
+        if st.button("🗑️ مسح ذاكرة المحادثة"):
+            st.session_state.chat_history = []
+            st.rerun()
+
+        if st.button("🚪 تسجيل الخروج"):
+            st.session_state.logged_in = False
+            st.session_state.chat_history = []
+            st.session_state.current_role = "free"
+            st.session_state.is_premium = False
+            st.session_state.activated_code = None
+            st.rerun()
+
+    st.title("⚖️ قاعة الاستشارات القانونية الرقمية")
+    st.markdown("<p style='text-align: center; color: #888;'>اختر رتبة وحجم باقة المستشار القانوني لليوم</p>", unsafe_allow_html=True)
+
+    if not st.session_state.is_premium or st.session_state.current_role == "free":
+        chosen_package = st.radio(
+            "",
+            ["🟢 باقة مجانية (إجابة سريعة)", "🔵 باقة المحامي (Pro) - 20$", "👑 باقة المستشار الملكي (VIP) - 50$"],
+            horizontal=True
+        )
+
+        if "Pro" in chosen_package:
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.info("💬 للاشتراك في باقة المحامي Pro بـ 20$، تواصل معنا على واتساب: **01094130731** وسنرسل لك رقم التحويل وكود التفعيل.")
+            st.markdown("<br>", unsafe_allow_html=True)
+            code = st.text_input("🔑 أدخل كود تفعيل باقة Pro:", type="password", key="pro_input")
+            if code:
+                if any(secrets.compare_digest(code, c) for c in ALLOWED_PRO_CODES):
+                    st.session_state.is_premium = True
+                    st.session_state.current_role = "pro"
+                    st.session_state.activated_code = code
+                    st.session_state.chat_history = []
+                    st.success("✅ تم التفعيل بنجاح! أهلاً بك في باقة المحامي Pro")
+                    time.sleep(0.5)
+                    st.rerun()
+                else:
+                    st.session_state.failed_attempts += 1
+                    if st.session_state.failed_attempts >= 5:
+                        st.session_state.lockout_time = datetime.datetime.now()
+                        st.rerun()
+                    st.error(f"❌ كود خاطئ. متبقي {5 - st.session_state.failed_attempts} محاولات.")
+
+        elif "VIP" in chosen_package:
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.warning("👑 للاشتراك في باقة المستشار الملكي VIP بـ 50$، تواصل معنا على واتساب: **01094130731** وسنرسل لك رقم التحويل وكود التفعيل.")
+            st.markdown("<br>", unsafe_allow_html=True)
+            code = st.text_input("👑 أدخل كود التفعيل الملكي VIP:", type="password", key="vip_input")
+            if code:
+                if any(secrets.compare_digest(code, c) for c in ALLOWED_VIP_CODES):
+                    st.session_state.is_premium = True
+                    st.session_state.current_role = "vip"
+                    st.session_state.activated_code = code
+                    st.session_state.chat_history = []
+                    st.success("👑 مرحباً بك سيادة المستشار! باقة VIP الملكية مفعّلة")
+                    time.sleep(0.5)
+                    st.rerun()
+                else:
+                    st.session_state.failed_attempts += 1
+                    if st.session_state.failed_attempts >= 5:
+                        st.session_state.lockout_time = datetime.datetime.now()
+                        st.rerun()
+                    st.error(f"❌ كود خاطئ. متبقي {5 - st.session_state.failed_attempts} محاولات.")
+        else:
+            st.session_state.is_premium = True
+            st.session_state.current_role = "free"
+
+    if st.session_state.is_premium:
+        st.write("---")
+        for msg in st.session_state.chat_history:
+            if msg["role"] == "user":
+                st.markdown(f"<div align='right' class='user-bubble'>👤 <b>سؤالك:</b><br>{msg['content']}</div>", unsafe_allow_html=True)
+            else:
+                st.markdown(f"<div align='right' class='ai-bubble'>⚖️ <b>المستشار:</b><br>{msg['content']}</div>", unsafe_allow_html=True)
+
+        if prompt := st.chat_input("اكتب وقائع قضيتك أو سؤالك القانوني هنا بالتفصيل..."):
+            clean_prompt = sanitize_input(prompt)
+            if clean_prompt:
+                now = datetime.datetime.now()
+                st.session_state.msg_timestamps = [t for t in st.session_state.msg_timestamps if (now - t).total_seconds() < 60]
+                if len(st.session_state.msg_timestamps) >= 4:
+                    st.error("⚠️ يرجى إبطاء معدل إرسال الاستشارات قليلاً لحماية السيرفر.")
+                else:
+                    st.session_state.msg_timestamps.append(now)
+                    st.session_state.chat_history.append({"role": "user", "content": clean_prompt})
+                    st.markdown(f"<div align='right' class='user-bubble'>👤 <b>سؤالك:</b><br>{clean_prompt}</div>", unsafe_allow_html=True)
+
+                    with st.spinner("⚖️ يقوم المستشار الآن بمراجعة الحيثيات ومواد القانون المصري..."):
+                        response = ask_law_ai(clean_prompt, st.session_state.current_role)
+                        st.session_state.chat_history.append({"role": "assistant", "content": response})
+                        st.markdown(f"<div align='right' class='ai-bubble'>⚖️ <b>المستشار:</b><br>{response}</div>", unsafe_allow_html=True)
+            else:
+                st.error("⚠️ السؤال يحتوي على رموز غير مسموح بها.")
